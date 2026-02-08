@@ -3,435 +3,637 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lịch Pokemon Widget</title>
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Font Awesome cho icon -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Font chữ phong cách game -->
-    <link href="https://fonts.googleapis.com/css2?family=VT323&family=Nunito:wght@400;700&display=swap" rel="stylesheet">
+    <title>Pokemon Trainer Card V9 (Mobile Ready)</title>
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Merriweather:wght@400;700;900&family=Nunito:wght@400;700;900&family=Oswald:wght@500;700&family=Patrick+Hand&family=VT323&display=swap&subset=vietnamese" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
     <style>
+        :root {
+            --primary: #ffcb05;
+            --secondary: #3b4cca;
+            --dark: #2a2a2a;
+            --glass: rgba(255, 255, 255, 0.95);
+            --heart: #e91e63;
+        }
+
+        * { box-sizing: border-box; }
         body {
             font-family: 'Nunito', sans-serif;
-            background-color: #f3f4f6;
-            /* Pattern nền Pokeball mờ */
-            background-image: radial-gradient(#e5e7eb 1px, transparent 1px);
-            background-size: 20px 20px;
+            background-color: var(--dark);
+            color: #fff;
+            margin: 0;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
         }
 
-        .pixel-font {
+        h1 {
+            color: var(--primary);
             font-family: 'VT323', monospace;
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            text-shadow: 3px 3px var(--secondary);
+            text-align: center;
         }
 
-        /* Hiệu ứng thẻ Pokemon */
-        .poke-card {
-            transition: all 0.3s ease;
-            transform-style: preserve-3d;
+        .container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+            width: 100%;
+            max-width: 1400px;
+            flex: 1;
+        }
+
+        /* --- CONTROLS --- */
+        .controls {
+            background: #444;
+            padding: 20px;
+            border-radius: 15px;
+            width: 100%;
+            max-width: 400px; /* PC Width */
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            height: fit-content;
+        }
+
+        .section-title {
+            border-bottom: 2px solid #666;
+            padding-bottom: 5px;
+            margin-bottom: 12px;
+            color: var(--primary);
+            font-weight: bold;
+            font-size: 1rem;
+            text-transform: uppercase;
+            margin-top: 15px;
+        }
+        .section-title:first-child { margin-top: 0; }
+
+        .form-group { margin-bottom: 10px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; color: #ccc; font-size: 0.85rem; }
+        input, select {
+            width: 100%; padding: 8px; border-radius: 5px; border: none;
+            background: #fff; color: #333; font-size: 0.95rem; outline: none;
         }
         
-        /* Hiệu ứng cho ngày đặc biệt (Lễ, Tết) */
-        .special-day-effect {
-            animation: holy-glow 2s infinite alternate;
-            border: 2px solid #fbbf24;
-            background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+        .bg-options {
+            display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px;
+        }
+        .bg-btn {
+            width: 100%; aspect-ratio: 1; border-radius: 50%;
+            border: 2px solid rgba(255,255,255,0.2); cursor: pointer;
+            transition: transform 0.2s; position: relative;
+        }
+        .bg-btn:hover { transform: scale(1.2); border-color: white; z-index: 10; }
+
+        /* --- PREVIEW AREA (RESPONSIVE WRAPPER) --- */
+        .preview-area {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-width: 300px; /* Cho phép co nhỏ trên mobile */
+            padding-bottom: 20px;
+            overflow: hidden; /* Ẩn phần thừa khi scale */
         }
 
-        .special-day-img {
-            filter: drop-shadow(0 0 10px #fbbf24);
-            animation: bounce 2s infinite;
+        /* Wrapper để scale thẻ */
+        .card-scaler {
+            transform-origin: top center;
+            transition: transform 0.3s ease;
         }
 
-        .sparkle {
-            position: absolute;
-            width: 20px;
-            height: 20px;
-            background: url('https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/shining-gem.png') no-repeat center/contain;
-            animation: sparkle-anim 1.5s infinite;
-            z-index: 10;
+        #trainer-card {
+            width: 700px; /* Kích thước gốc cố định để đảm bảo đẹp */
+            height: 480px;
+            background: linear-gradient(135deg, #e53935, #b71c1c);
+            border-radius: 20px;
+            padding: 25px;
+            position: relative;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.7);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            font-family: 'Nunito', sans-serif; 
         }
 
-        @keyframes holy-glow {
-            from { box-shadow: 0 0 10px #fbbf24, 0 0 20px #f59e0b; }
-            to { box-shadow: 0 0 20px #fbbf24, 0 0 40px #d97706; }
+        /* Classes Font */
+        .font-nunito * { font-family: 'Nunito', sans-serif !important; }
+        .font-patrick * { font-family: 'Patrick Hand', cursive !important; }
+        .font-dancing * { font-family: 'Dancing Script', cursive !important; }
+        .font-oswald * { font-family: 'Oswald', sans-serif !important; letter-spacing: 1px; }
+        .font-merri * { font-family: 'Merriweather', serif !important; }
+
+        .card-header {
+            display: flex; justify-content: space-between; align-items: flex-start;
+            margin-bottom: 10px; z-index: 2;
+        }
+        .card-title {
+            font-size: 1.8rem; font-weight: 900; color: rgba(255,255,255,0.95);
+            text-transform: uppercase; text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        .card-id {
+            background: rgba(0,0,0,0.5); padding: 5px 15px; border-radius: 20px;
+            font-family: 'VT323', monospace !important; 
+            font-size: 1.6rem; 
+            color: #ffcb05; 
+            border: 2px solid rgba(255,255,255,0.3);
         }
 
-        @keyframes bounce {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-10px) scale(1.05); }
+        /* --- CARD BODY --- */
+        .card-main {
+            display: flex; gap: 20px; height: 230px; margin-bottom: 10px; z-index: 5;
         }
 
-        @keyframes sparkle-anim {
-            0% { opacity: 0; transform: scale(0.5) rotate(0deg); }
-            50% { opacity: 1; transform: scale(1.2) rotate(180deg); }
-            100% { opacity: 0; transform: scale(0.5) rotate(360deg); }
+        .info-box {
+            flex: 1; background: var(--glass); padding: 20px 25px;
+            border-radius: 15px; box-shadow: 5px 5px 15px rgba(0,0,0,0.1);
+            color: #222; display: grid; grid-template-columns: 110px 1fr;
+            align-content: center; gap: 8px 10px;
         }
 
-        /* Chế độ Widget giả lập */
-        .widget-container {
-            aspect-ratio: 1/1; /* Hình vuông */
-            max-width: 350px; /* Kích thước tương đương bề ngang điện thoại */
-            margin: 0 auto;
-            border-radius: 24px;
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+        .info-label {
+            font-weight: 900; color: #555; font-size: 0.8rem; text-transform: uppercase;
+            align-self: center;
+        }
+        .info-val {
+            font-weight: 800; color: #000; font-size: 1.15rem; 
+            overflow: hidden; white-space: nowrap; text-overflow: ellipsis;
+            border-bottom: 1px dashed #ccc; align-self: center; width: 100%;
         }
 
-        /* Ẩn thanh cuộn cho danh sách lịch */
-        .no-scrollbar::-webkit-scrollbar {
-            display: none;
+        .avatar-box {
+            width: 230px; height: 230px;
+            background: rgba(255,255,255,0.15); border: 4px solid #fff;
+            border-radius: 15px; overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2); position: relative;
+            display: flex; align-items: flex-end; justify-content: center;
         }
-        .no-scrollbar {
-            -ms-overflow-style: none;
-            scrollbar-width: none;
+        .avatar-box img {
+            max-width: 100%; max-height: 100%; width: auto; height: auto;
+            object-fit: contain; filter: drop-shadow(0 0 5px rgba(0,0,0,0.3));
+        }
+
+        .pokemon-team {
+            margin-top: auto; display: flex; justify-content: space-between; z-index: 5; padding: 5px;
+        }
+        .poke-slot {
+            width: 90px; height: 90px;
+            background: rgba(0,0,0,0.2); border-radius: 50%;
+            border: 2px solid rgba(255,255,255,0.6);
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; position: relative; transition: all 0.2s;
+        }
+        .poke-slot img {
+            width: 85%; height: 85%; object-fit: contain;
+            filter: drop-shadow(2px 4px 4px rgba(0,0,0,0.5));
+        }
+        .remove-poke {
+            position: absolute; top: -2px; right: -2px;
+            background: #ff4444; color: white; border-radius: 50%;
+            width: 20px; height: 20px; display: none;
+            align-items: center; justify-content: center;
+            font-size: 10px; border: 1px solid white;
+        }
+        .poke-slot:hover .remove-poke { display: flex; }
+
+        /* BUTTONS */
+        .btn-save {
+            background: #4CAF50; color: white; border: none; padding: 15px;
+            font-size: 1.1rem; border-radius: 8px; cursor: pointer;
+            margin-top: 20px; font-weight: bold; width: 100%;
+            display: flex; align-items: center; justify-content: center; gap: 10px;
+            transition: 0.2s;
+        }
+        .btn-save:hover { background: #45a049; }
+
+        /* NÚT ỦNG HỘ (MỚI) */
+        .btn-donate {
+            background: var(--heart); color: white; border: none; padding: 12px;
+            font-size: 1rem; border-radius: 8px; cursor: pointer;
+            margin-top: 10px; font-weight: bold; width: 100%;
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+            transition: 0.2s; animation: pulse 2s infinite;
+        }
+        .btn-donate:hover { background: #c2185b; }
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(233, 30, 99, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(233, 30, 99, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(233, 30, 99, 0); }
+        }
+
+        /* MODAL */
+        .modal {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.9); z-index: 100;
+            justify-content: center; align-items: center;
+            animation: fadeIn 0.3s;
+        }
+        @keyframes fadeIn { from {opacity: 0} to {opacity: 1} }
+
+        .modal-content {
+            background: #fff; color: #333; width: 95%; max-width: 800px; height: 85vh;
+            border-radius: 15px; padding: 20px; display: flex; flex-direction: column;
+        }
+        
+        /* DONATE MODAL CONTENT */
+        .donate-content {
+            background: #fff; color: #333; width: 90%; max-width: 400px;
+            border-radius: 15px; padding: 30px; text-align: center;
+            position: relative;
+        }
+        .donate-line {
+            padding: 10px; border-bottom: 1px dashed #ccc; font-size: 1.1rem;
+        }
+        .donate-line:last-child { border-bottom: none; }
+        .close-donate {
+            position: absolute; top: 10px; right: 15px; font-size: 1.5rem; cursor: pointer; color: #888;
+        }
+
+        /* GRID POKEMON */
+        .poke-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+            gap: 10px; overflow-y: auto; flex: 1; padding: 10px; background: #eee;
+            border-radius: 8px;
+        }
+        .poke-item {
+            cursor: pointer; text-align: center; padding: 8px; border-radius: 8px;
+            background: white; border: 1px solid transparent;
+        }
+        .poke-item:hover { border-color: var(--secondary); transform: scale(1.05); }
+
+        /* FOOTER */
+        footer {
+            margin-top: 30px; width: 100%;
+            display: flex; justify-content: center; align-items: center; gap: 15px;
+            padding: 15px; background: #333; color: #aaa; border-top: 1px solid #555;
+        }
+        footer img { height: 35px; width: auto; }
+
+        /* --- RESPONSIVE MEDIA QUERIES --- */
+        @media (max-width: 768px) {
+            h1 { font-size: 2rem; }
+            .container { flex-direction: column; align-items: center; }
+            .controls { max-width: 100%; }
+            .preview-area { width: 100%; align-items: center; }
         }
     </style>
 </head>
-<body class="min-h-screen text-gray-800 pb-10">
+<body>
 
-    <!-- Header -->
-    <header class="bg-red-600 text-white p-4 shadow-lg sticky top-0 z-50">
-        <div class="container mx-auto flex justify-between items-center">
-            <h1 class="text-2xl font-bold flex items-center gap-2">
-                <i class="fa-solid fa-circle-half-stroke rotate-90"></i> PokeCalendar
-            </h1>
-            <button onclick="scrollToToday()" class="bg-white text-red-600 px-3 py-1 rounded-full text-sm font-bold shadow hover:bg-red-50 transition">
-                Hôm nay
-            </button>
-        </div>
-    </header>
+    <h1><i class="fas fa-gamepad"></i> Pokemon Trainer Card </h1>
 
-    <main class="container mx-auto px-4 mt-6">
-        
-        <!-- SECTION 1: WIDGET MODE (Cái khung to như bạn yêu cầu) -->
-        <div class="mb-8">
-            <h2 class="text-lg font-bold text-gray-500 mb-2 text-center uppercase tracking-wider">Widget Hôm Nay</h2>
+    <div class="container">
+        <div class="controls">
+            <div class="section-title">1. Thông tin Trainer</div>
+            <div class="form-group"><input type="text" id="inpName" placeholder="Tên Trainer" value="Ash Ketchum"></div>
             
-            <!-- Đây là cái khung Widget -->
-            <div id="widget-display" class="widget-container bg-white relative overflow-hidden flex flex-col justify-between p-6 cursor-pointer transform hover:scale-[1.02] transition">
-                
-                <!-- Background Decoration -->
-                <div class="absolute -right-10 -top-10 w-40 h-40 bg-red-100 rounded-full opacity-50 z-0"></div>
-                <div class="absolute -left-10 -bottom-10 w-32 h-32 bg-blue-100 rounded-full opacity-50 z-0"></div>
-
-                <!-- Date Info -->
-                <div class="relative z-10 flex justify-between items-start h-1/4">
-                    <div>
-                        <p id="widget-day-name" class="text-red-500 font-bold text-xl uppercase tracking-wide">Thứ Hai</p>
-                        <p id="widget-date" class="text-6xl font-black text-gray-800 pixel-font leading-none">01</p>
-                        <p id="widget-month" class="text-gray-500 font-medium text-lg">Tháng 1</p>
-                    </div>
-                    <!-- Type Icon Placeholder -->
-                    <div id="type-icon" class="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-xs text-gray-500">
-                        <i class="fa-solid fa-bolt"></i>
-                    </div>
-                </div>
-
-                <!-- Pokemon Main Image - Điều chỉnh size để không che mất tên -->
-                <div class="relative z-10 flex-1 flex items-center justify-center min-h-0">
-                    <div id="special-effects-container"></div> <!-- Container cho hiệu ứng lấp lánh -->
-                    <img id="widget-poke-img" src="" alt="Pokemon" class="w-auto h-40 object-contain drop-shadow-xl transition-all duration-500">
-                </div>
-
-                <!-- Pokemon Name & Event - Sửa layout để tên không bị mất -->
-                <div class="relative z-10 text-center h-auto min-h-[3rem] flex flex-col justify-end pb-1">
-                    <p id="widget-event-text" class="text-[10px] text-yellow-600 font-bold uppercase tracking-wider mb-0.5 -mt-1 h-3"></p> <!-- Text cho ngày lễ nhỏ lại và xích lên -->
-                    <p id="widget-poke-name" class="text-lg font-bold capitalize text-gray-800 leading-tight">Loading...</p>
-                </div>
+            <div class="form-group" style="display:flex; gap:10px">
+                <input type="text" id="inpId" value="ID: 99999" style="width:70%">
+                <button onclick="randomId()" style="width:30%; cursor:pointer; background:var(--primary); border:none; border-radius:5px"><i class="fas fa-dice"></i></button>
             </div>
-            <p class="text-center text-xs text-gray-400 mt-2 italic">Chạm vào widget để xem chi tiết hoặc đổi ngày</p>
+
+            <div class="form-group" style="display:flex; align-items:center; gap:10px; background:#555; padding:5px; border-radius:5px;">
+                <label style="margin:0; color:white; flex:1">Màu chữ ID:</label>
+                <input type="color" id="inpIdColor" value="#ffcb05" oninput="changeIdColor(this.value)" style="width:50px; height:30px; border:none; padding:0">
+            </div>
+
+            <div class="form-group">
+                <label>Số tiền (Money)</label>
+                <input type="text" id="inpMoney" value="$ 999,999" oninput="updateMoney(this.value)">
+            </div>
+
+            <div class="form-group">
+                <label>Class Level</label>
+                <select id="inpClass" onchange="updateClass(this.value)">
+                    <option value="NEWBIE">NEWBIE</option>
+                    <option value="TRAINER">TRAINER</option>
+                    <option value="GYM LEADER">GYM LEADER</option>
+                    <option value="ELITE FOUR">ELITE FOUR</option>
+                    <option value="CHAMPION" selected>CHAMPION</option>
+                    <option value="LEGEND">LEGEND</option>
+                </select>
+            </div>
+            
+            <div class="section-title">2. Chọn Trainer</div>
+            <div class="form-group">
+                <label>Nhân vật</label>
+                <select id="trainerSelect" onchange="changeTrainer()">
+                    <option value="1.png">Red</option>
+                    <option value="2.png">Leaf</option>
+                    <option value="3.webp">May</option>
+                    <option value="dawn.png">Dawn</option>
+                    <option value="serena.png">Serena</option>
+                    <option value="ash.png">Ash</option>
+                    <option value="custom.png">Custom</option>
+                </select>
+            </div>
+
+            <div class="section-title">3. Giao diện & Font</div>
+            <div class="form-group">
+                <label>Font chữ</label>
+                <select id="fontSelect" onchange="changeFont()">
+                    <option value="font-nunito">Nunito (Hiện đại)</option>
+                    <option value="font-patrick">Patrick Hand (Vui nhộn)</option>
+                    <option value="font-dancing">Dancing Script (Viết tay)</option>
+                    <option value="font-merri">Merriweather (Trang trọng)</option>
+                    <option value="font-oswald">Oswald (Mạnh mẽ)</option>
+                </select>
+            </div>
+            
+            <label>Màu nền thẻ</label>
+            <div class="bg-options">
+                <div class="bg-btn" style="background: linear-gradient(135deg, #e53935, #b71c1c)" onclick="setBg('fire')"></div>
+                <div class="bg-btn" style="background: linear-gradient(135deg, #1e88e5, #0d47a1)" onclick="setBg('water')"></div>
+                <div class="bg-btn" style="background: linear-gradient(135deg, #43a047, #1b5e20)" onclick="setBg('grass')"></div>
+                <div class="bg-btn" style="background: linear-gradient(135deg, #ffd700, #f57f17)" onclick="setBg('electric')"></div>
+                <div class="bg-btn" style="background: linear-gradient(135deg, #29b6f6, #01579b)" onclick="setBg('ice')"></div>
+                <div class="bg-btn" style="background: linear-gradient(135deg, #d32f2f, #8e0000)" onclick="setBg('fighting')"></div>
+                <div class="bg-btn" style="background: linear-gradient(135deg, #ab47bc, #6a1b9a)" onclick="setBg('poison')"></div>
+                <div class="bg-btn" style="background: linear-gradient(135deg, #8d6e63, #3e2723)" onclick="setBg('ground')"></div>
+                <div class="bg-btn" style="background: linear-gradient(135deg, #90caf9, #1565c0)" onclick="setBg('flying')"></div>
+                <div class="bg-btn" style="background: linear-gradient(135deg, #f06292, #880e4f)" onclick="setBg('psychic')"></div>
+                <div class="bg-btn" style="background: linear-gradient(135deg, #c5e1a5, #33691e)" onclick="setBg('bug')"></div>
+                <div class="bg-btn" style="background: linear-gradient(135deg, #607d8b, #263238)" onclick="setBg('steel')"></div>
+            </div>
+
+            <button class="btn-save" onclick="downloadCard()"><i class="fas fa-download"></i> TẢI CARD VỀ MÁY</button>
+            <button class="btn-donate" onclick="openDonate()"><i class="fas fa-heart"></i> Ủng Hộ Tác Giả</button>
         </div>
 
-        <!-- SECTION 2: GRID LỊCH (Chi tiết các ngày trong tháng) -->
-        <div class="bg-white rounded-xl shadow-md p-4">
-            <div class="flex justify-between items-center mb-4">
-                <button onclick="changeMonth(-1)" class="p-2 hover:bg-gray-100 rounded-full"><i class="fa-solid fa-chevron-left"></i></button>
-                <h2 id="calendar-month-year" class="text-xl font-bold capitalize">Tháng 1, 2026</h2>
-                <button onclick="changeMonth(1)" class="p-2 hover:bg-gray-100 rounded-full"><i class="fa-solid fa-chevron-right"></i></button>
-            </div>
+        <div class="preview-area">
+            <div class="card-scaler">
+                <div id="trainer-card" class="font-nunito">
+                    <div class="card-header">
+                        <div class="card-title">TRAINER CARD</div>
+                        <div class="card-id" id="valId">ID: 99999</div>
+                    </div>
 
-            <!-- Các ngày trong tuần -->
-            <div class="grid grid-cols-7 gap-1 mb-2 text-center text-xs font-bold text-gray-400 uppercase">
-                <div>CN</div>
-                <div>T2</div>
-                <div>T3</div>
-                <div>T4</div>
-                <div>T5</div>
-                <div>T6</div>
-                <div>T7</div>
-            </div>
+                    <div class="card-main">
+                        <div class="info-box">
+                            <span class="info-label">NAME</span><span class="info-val" id="valName">Ash Ketchum</span>
+                            <span class="info-label">BIRTHDAY</span><span class="info-val" id="valDob">--/--/----</span>
+                            <span class="info-label">START</span><span class="info-val" id="valStart">--/--/----</span>
+                            <span class="info-label">MONEY</span><span class="info-val" id="valMoney">$ 999,999</span>
+                            <span class="info-label">CLASS LEVEL</span><span class="info-val" id="valClass">CHAMPION</span>
+                        </div>
+                        <div class="avatar-box">
+                            <img id="trainerImg" src="" alt="Trainer">
+                        </div>
+                    </div>
 
-            <!-- Lưới ngày -->
-            <div id="calendar-grid" class="grid grid-cols-7 gap-1">
-                <!-- Javascript sẽ render ngày vào đây -->
-            </div>
-        </div>
-
-    </main>
-
-    <!-- Modal chi tiết (Khi click vào ngày trong lịch) -->
-    <div id="detail-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 p-4" onclick="closeModal()">
-        <div class="bg-white rounded-2xl p-6 w-full max-w-sm transform scale-95 transition-transform duration-200" onclick="event.stopPropagation()">
-            <div class="text-right">
-                <button onclick="closeModal()" class="text-gray-400 hover:text-red-500"><i class="fa-solid fa-xmark fa-lg"></i></button>
-            </div>
-            <div class="text-center">
-                <p id="modal-date" class="text-gray-500 font-medium">--/--/----</p>
-                <div class="my-4 relative h-40 flex items-center justify-center">
-                     <img id="modal-img" src="" class="h-full object-contain drop-shadow-lg">
+                    <div class="pokemon-team">
+                        <div class="poke-slot" onclick="openModal(0)" id="slot-0"><i class="fas fa-plus" style="opacity:0.5; color:#fff"></i></div>
+                        <div class="poke-slot" onclick="openModal(1)" id="slot-1"><i class="fas fa-plus" style="opacity:0.5; color:#fff"></i></div>
+                        <div class="poke-slot" onclick="openModal(2)" id="slot-2"><i class="fas fa-plus" style="opacity:0.5; color:#fff"></i></div>
+                        <div class="poke-slot" onclick="openModal(3)" id="slot-3"><i class="fas fa-plus" style="opacity:0.5; color:#fff"></i></div>
+                        <div class="poke-slot" onclick="openModal(4)" id="slot-4"><i class="fas fa-plus" style="opacity:0.5; color:#fff"></i></div>
+                        <div class="poke-slot" onclick="openModal(5)" id="slot-5"><i class="fas fa-plus" style="opacity:0.5; color:#fff"></i></div>
+                    </div>
                 </div>
-                <h3 id="modal-name" class="text-2xl font-bold capitalize mb-2">Pokemon Name</h3>
-                <p id="modal-desc" class="text-sm text-gray-600">Pokemon đặc trưng cho ngày này!</p>
-                <button onclick="setAsActiveWidget()" class="mt-6 w-full bg-red-500 text-white py-3 rounded-xl font-bold hover:bg-red-600 shadow-md">
-                    Xem trên Widget
-                </button>
             </div>
         </div>
     </div>
 
+    <footer>
+        <img src="logo.png" alt="Logo" onerror="this.style.display='none'">
+        <span>@Dev PH <br> This is a non-commercial fan-made project.Pokémon and all related names are trademarks of Nintendo, Game Freak, and The Pokémon Company.I do not own any Pokémon-related copyrights.</span>
+    </footer>
+
+    <div id="pokeModal" class="modal">
+        <div class="modal-content">
+            <div style="display:flex; justify-content:space-between; margin-bottom:15px">
+                <h2>Chọn Pokemon</h2>
+                <button onclick="closeModal()" style="padding:5px 15px; cursor:pointer">X</button>
+            </div>
+            <input type="text" id="searchPoke" placeholder="Tìm tên Pokemon..." style="border:1px solid #ccc; margin-bottom:10px" onkeyup="filterPoke()">
+            <div class="poke-grid" id="pokeList">Loading...</div>
+        </div>
+    </div>
+
+    <div id="donateModal" class="modal" onclick="if(event.target == this) closeDonate()">
+        <div class="donate-content">
+            <span class="close-donate" onclick="closeDonate()">&times;</span>
+            <h2 style="color:var(--heart); margin-bottom:20px"><i class="fas fa-heart"></i> Ủng Hộ Tác Giả</h2>
+            <div class="donate-line">Ngân hàng: MB Bank</div>
+            <div class="donate-line">STK: 0000000000</div>
+            <div class="donate-line">Tên: NGUYEN VAN A</div>
+            <div class="donate-line">Momo: 0987654321</div>
+        </div>
+    </div>
+
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
     <script>
-        // Cấu hình
-        const POKE_API_BASE = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/";
-        // Sử dụng ảnh nhỏ hơn cho danh sách lưới để tải nhanh hơn
-        const POKE_ICON_BASE = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/"; 
-        const TOTAL_POKEMON = 1025; // Số lượng Pokemon hiện tại
+        let allPokemon = [];
+        let currentSlot = 0;
+        const apiUrl = "https://pokeapi.co/api/v2/pokemon?limit=1200";
 
-        // Danh sách ngày lễ đặc biệt (Tháng bắt đầu từ 0)
-        // Đã bổ sung thêm các ngày lễ nhỏ theo yêu cầu
-        const SPECIAL_DAYS = [
-            { d: 1, m: 0, name: "Tết Dương Lịch", effect: "fireworks" }, 
-            { d: 14, m: 1, name: "Valentine", effect: "heart" }, 
-            { d: 8, m: 2, name: "Q.Tế Phụ Nữ", effect: "flower" }, 
-            { d: 10, m: 2, name: "Giỗ Tổ Hùng Vương", effect: "incense" }, // Giả định ngày dương (thay đổi theo năm âm)
-            { d: 30, m: 3, name: "Giải Phóng MN", effect: "star" }, 
-            { d: 1, m: 4, name: "Q.Tế Lao Động", effect: "star" }, 
-            { d: 1, m: 5, name: "Q.Tế Thiếu Nhi", effect: "balloon" }, // 1/6
-            { d: 27, m: 6, name: "TB-Liệt Sĩ", effect: "candle" }, // 27/7
-            { d: 19, m: 7, name: "CM Tháng 8", effect: "flag" }, // 19/8
-            { d: 2, m: 8, name: "Quốc Khánh", effect: "flag" }, // 2/9
-            { d: 10, m: 9, name: "Giải Phóng Thủ Đô", effect: "star" }, // 10/10
-            { d: 20, m: 9, name: "Phụ Nữ VN", effect: "flower" }, // 20/10
-            { d: 31, m: 9, name: "Halloween", effect: "ghost" }, // 31/10
-            { d: 20, m: 10, name: "Nhà Giáo VN", effect: "book" }, // 20/11
-            { d: 22, m: 11, name: "QĐ Nhân Dân", effect: "star" }, // 22/12
-            { d: 25, m: 11, name: "Giáng Sinh", effect: "snow" }, 
-            { d: 17, m: 1, name: "Tết Nguyên Đán", effect: "tet" } // Giả lập
-        ];
+        window.onload = async () => {
+            setupInputs();
+            randomId();
+            changeTrainer(); 
+            await loadPokemonData();
+            resizeCard(); // Gọi hàm scale thẻ lần đầu
+        };
 
-        let currentMonth = new Date().getMonth();
-        let currentYear = new Date().getFullYear();
-        let selectedDate = new Date(); // Ngày đang được chọn để hiển thị lên widget
+        // Khi cửa sổ thay đổi kích thước thì scale lại thẻ
+        window.onresize = resizeCard;
 
-        // Hàm khởi tạo
-        document.addEventListener('DOMContentLoaded', () => {
-            renderCalendar(currentMonth, currentYear);
-            updateWidget(new Date()); // Mặc định hiển thị hôm nay
-        });
-
-        // Hàm lấy ID Pokemon dựa trên ngày (Deterministic: Cùng ngày luôn ra cùng Pokemon)
-        function getPokemonIdForDate(date) {
-            const startOfYear = new Date(date.getFullYear(), 0, 0);
-            const diff = date - startOfYear;
-            const oneDay = 1000 * 60 * 60 * 24;
-            const dayOfYear = Math.floor(diff / oneDay);
+        // --- RESPONSIVE CARD LOGIC ---
+        function resizeCard() {
+            const container = document.querySelector('.preview-area');
+            const scaler = document.querySelector('.card-scaler');
+            const cardWidth = 700; // Chiều rộng gốc của thẻ
+            const padding = 40;
             
-            // Công thức: (Ngày trong năm + Năm) % Tổng số Pokemon + 1
-            // Cộng thêm năm để năm sau khác năm trước
-            let pokeId = ((dayOfYear + date.getFullYear()) % TOTAL_POKEMON) + 1;
-            return pokeId;
-        }
+            // Lấy chiều rộng container chứa thẻ
+            const availableWidth = container.offsetWidth - padding;
 
-        // Kiểm tra ngày lễ
-        function checkSpecialDay(date) {
-            return SPECIAL_DAYS.find(s => s.d === date.getDate() && s.m === date.getMonth());
-        }
-
-        // Cập nhật Widget Lớn
-        function updateWidget(date) {
-            selectedDate = date;
-            
-            // Cập nhật text ngày tháng
-            const days = ['Chủ Nhật', 'Thứ Hai', 'Thứ Ba', 'Thứ Tư', 'Thứ Năm', 'Thứ Sáu', 'Thứ Bảy'];
-            document.getElementById('widget-day-name').textContent = days[date.getDay()];
-            document.getElementById('widget-date').textContent = date.getDate().toString().padStart(2, '0');
-            document.getElementById('widget-month').textContent = `Tháng ${date.getMonth() + 1}`;
-
-            // Lấy thông tin Pokemon
-            const pokeId = getPokemonIdForDate(date);
-            const imgUrl = `${POKE_API_BASE}${pokeId}.png`;
-            
-            const widgetImg = document.getElementById('widget-poke-img');
-            const widgetContainer = document.getElementById('widget-display');
-            const effectContainer = document.getElementById('special-effects-container');
-            const eventText = document.getElementById('widget-event-text');
-            const widgetName = document.getElementById('widget-poke-name');
-
-            // Reset hiệu ứng
-            widgetImg.src = imgUrl;
-            widgetContainer.className = "widget-container bg-white relative overflow-hidden flex flex-col justify-between p-6 cursor-pointer transform transition shadow-lg";
-            // Giảm kích thước ảnh trong class để chừa chỗ cho tên
-            widgetImg.className = "w-auto h-40 object-contain drop-shadow-xl transition-all duration-500 z-10";
-            effectContainer.innerHTML = '';
-            eventText.textContent = "";
-            widgetName.textContent = "Loading..."; // Reset text while loading
-
-            // Lấy tên Pokemon
-            fetch(`https://pokeapi.co/api/v2/pokemon/${pokeId}`)
-                .then(res => res.json())
-                .then(data => {
-                    widgetName.textContent = data.name;
-                })
-                .catch(() => {
-                    widgetName.textContent = `Pokemon #${pokeId}`;
-                });
-
-            // Kiểm tra ngày lễ để thêm hiệu ứng
-            const special = checkSpecialDay(date);
-            if (special) {
-                widgetContainer.classList.add("special-day-effect");
-                widgetImg.classList.add("special-day-img");
-                eventText.textContent = `★ ${special.name} ★`;
-                
-                // Thêm các hạt lấp lánh
-                for(let i=0; i<5; i++) {
-                    const sparkle = document.createElement('div');
-                    sparkle.className = 'sparkle';
-                    sparkle.style.top = Math.random() * 80 + 10 + '%';
-                    sparkle.style.left = Math.random() * 80 + 10 + '%';
-                    sparkle.style.animationDelay = Math.random() + 's';
-                    effectContainer.appendChild(sparkle);
-                }
-            }
-        }
-
-        // Render Lưới Lịch
-        function renderCalendar(month, year) {
-            const grid = document.getElementById('calendar-grid');
-            const monthYearText = document.getElementById('calendar-month-year');
-            grid.innerHTML = "";
-            
-            monthYearText.textContent = `Tháng ${month + 1}, ${year}`;
-
-            const firstDay = new Date(year, month, 1).getDay();
-            const daysInMonth = new Date(year, month + 1, 0).getDate();
-
-            // Các ô trống trước ngày mùng 1
-            for (let i = 0; i < firstDay; i++) {
-                const emptyCell = document.createElement('div');
-                grid.appendChild(emptyCell);
-            }
-
-            // Các ngày trong tháng
-            const today = new Date();
-            for (let i = 1; i <= daysInMonth; i++) {
-                const date = new Date(year, month, i);
-                const pokeId = getPokemonIdForDate(date);
-                const isToday = (i === today.getDate() && month === today.getMonth() && year === today.getFullYear());
-                const isSpecial = checkSpecialDay(date);
-
-                const cell = document.createElement('div');
-                cell.className = `
-                    aspect-square rounded-lg p-1 border border-gray-100 flex flex-col items-center justify-between cursor-pointer hover:bg-gray-50 transition relative overflow-hidden
-                    ${isToday ? 'bg-red-50 border-red-300 ring-2 ring-red-200' : 'bg-white'}
-                    ${isSpecial ? 'bg-yellow-50 border-yellow-300' : ''}
-                `;
-                
-                cell.onclick = () => openDetail(date);
-
-                // Số ngày
-                const dayNum = document.createElement('span');
-                dayNum.className = "text-xs font-bold text-gray-500 z-10";
-                dayNum.textContent = i;
-                if(isSpecial) dayNum.classList.add('text-yellow-600');
-
-                // Ảnh Pokemon nhỏ (Dùng sprite icon cho nhẹ)
-                const img = document.createElement('img');
-                img.src = `${POKE_ICON_BASE}${pokeId}.png`;
-                img.className = "w-full h-full object-contain z-0 -mt-2 opacity-80";
-                img.loading = "lazy";
-
-                // Dấu chấm đánh dấu ngày lễ
-                if (isSpecial) {
-                    const dot = document.createElement('div');
-                    dot.className = "absolute top-1 right-1 w-2 h-2 bg-yellow-400 rounded-full animate-pulse";
-                    cell.appendChild(dot);
-                }
-
-                cell.appendChild(dayNum);
-                cell.appendChild(img);
-                grid.appendChild(cell);
-            }
-        }
-
-        // Modal Logic
-        let modalTargetDate = null;
-
-        function openDetail(date) {
-            modalTargetDate = date;
-            const modal = document.getElementById('detail-modal');
-            const modalDate = document.getElementById('modal-date');
-            const modalImg = document.getElementById('modal-img');
-            const modalName = document.getElementById('modal-name');
-            const modalDesc = document.getElementById('modal-desc');
-
-            const pokeId = getPokemonIdForDate(date);
-            const special = checkSpecialDay(date);
-
-            modalDate.textContent = `Ngày ${date.getDate()} tháng ${date.getMonth() + 1}, ${date.getFullYear()}`;
-            modalImg.src = `${POKE_API_BASE}${pokeId}.png`;
-            
-            // Fetch name (hoặc dùng cache nếu app phức tạp hơn)
-            fetch(`https://pokeapi.co/api/v2/pokemon/${pokeId}`)
-                .then(res => res.json())
-                .then(data => modalName.textContent = data.name)
-                .catch(() => modalName.textContent = `Pokemon #${pokeId}`);
-
-            if (special) {
-                modalDesc.textContent = `🎉 Sự kiện: ${special.name}`;
-                modalDesc.className = "text-yellow-600 font-bold animate-bounce";
+            if (availableWidth < cardWidth) {
+                const scale = availableWidth / cardWidth;
+                scaler.style.transform = `scale(${scale})`;
+                // Cần set chiều cao cho container cha để không bị khoảng trắng
+                container.style.height = (480 * scale + 50) + 'px';
             } else {
-                modalDesc.textContent = "Chạm 'Xem trên Widget' để đưa ra màn hình chính.";
-                modalDesc.className = "text-sm text-gray-600";
-            }
-
-            modal.classList.remove('hidden');
-            modal.classList.add('flex');
-        }
-
-        function closeModal() {
-            document.getElementById('detail-modal').classList.add('hidden');
-            document.getElementById('detail-modal').classList.remove('flex');
-        }
-
-        function setAsActiveWidget() {
-            if(modalTargetDate) {
-                updateWidget(modalTargetDate);
-                closeModal();
-                // Scroll to top smooth
-                window.scrollTo({ top: 0, behavior: 'smooth' });
+                scaler.style.transform = 'scale(1)';
+                container.style.height = 'auto';
             }
         }
 
-        // Navigation
-        function changeMonth(step) {
-            currentMonth += step;
-            if (currentMonth > 11) {
-                currentMonth = 0;
-                currentYear++;
-            } else if (currentMonth < 0) {
-                currentMonth = 11;
-                currentYear--;
+        // --- DONATE MODAL ---
+        function openDonate() { document.getElementById('donateModal').style.display = 'flex'; }
+        function closeDonate() { document.getElementById('donateModal').style.display = 'none'; }
+
+        // --- TRAINER LOGIC (FETCH BASE64) ---
+        async function changeTrainer() {
+            const fileName = document.getElementById('trainerSelect').value;
+            const imgElement = document.getElementById('trainerImg');
+            imgElement.src = '';
+            
+            try {
+                const response = await fetch(`image/${fileName}`);
+                if (!response.ok) throw new Error("File not found");
+                const blob = await response.blob();
+                const reader = new FileReader();
+                reader.onloadend = () => { imgElement.src = reader.result; }
+                reader.readAsDataURL(blob);
+            } catch (err) {
+                console.warn(err);
+                imgElement.src = `image/${fileName}`;
             }
-            renderCalendar(currentMonth, currentYear);
         }
 
-        function scrollToToday() {
-            const today = new Date();
-            currentMonth = today.getMonth();
-            currentYear = today.getFullYear();
-            renderCalendar(currentMonth, currentYear);
-            updateWidget(today);
+        // --- UI LOGIC ---
+        function setupInputs() {
+            document.getElementById('inpName').addEventListener('input', (e) => {
+                document.getElementById('valName').innerText = e.target.value || "Unknown";
+            });
+            document.getElementById('inpId').addEventListener('input', (e) => {
+                document.getElementById('valId').innerText = e.target.value;
+            });
+        }
+        function updateMoney(val) { document.getElementById('valMoney').innerText = val; }
+        function updateClass(val) { document.getElementById('valClass').innerText = val; }
+        
+        function randomId() {
+            const id = Math.floor(Math.random() * 90000) + 10000;
+            const str = "ID: " + id;
+            document.getElementById('valId').innerText = str;
+            document.getElementById('inpId').value = str;
+        }
+        function changeIdColor(color) {
+            const el = document.getElementById('valId');
+            el.style.color = color; el.style.borderColor = color;
+        }
+        function changeFont() {
+            const fontClass = document.getElementById('fontSelect').value;
+            const card = document.getElementById('trainer-card');
+            card.className = fontClass; // Replace all classes
+        }
+        function setBg(type) {
+            const card = document.getElementById('trainer-card');
+            let bg;
+            switch(type) {
+                case 'water': bg = "linear-gradient(135deg, #29b6f6, #01579b)"; break;
+                case 'grass': bg = "linear-gradient(135deg, #66bb6a, #1b5e20)"; break;
+                case 'electric': bg = "linear-gradient(135deg, #ffee58, #f57f17)"; break;
+                case 'ice': bg = "linear-gradient(135deg, #80deea, #006064)"; break;
+                case 'fighting': bg = "linear-gradient(135deg, #ef5350, #b71c1c)"; break;
+                case 'poison': bg = "linear-gradient(135deg, #ab47bc, #4a148c)"; break;
+                case 'ground': bg = "linear-gradient(135deg, #8d6e63, #3e2723)"; break;
+                case 'flying': bg = "linear-gradient(135deg, #90caf9, #1565c0)"; break;
+                case 'psychic': bg = "linear-gradient(135deg, #f48fb1, #880e4f)"; break;
+                case 'bug': bg = "linear-gradient(135deg, #c5e1a5, #33691e)"; break;
+                case 'steel': bg = "linear-gradient(135deg, #b0bec5, #37474f)"; break;
+                default: bg = "linear-gradient(135deg, #e53935, #b71c1c)";
+            }
+            card.style.background = bg;
         }
 
+        // --- POKEMON LOGIC ---
+        async function loadPokemonData() {
+            try {
+                const res = await fetch(apiUrl);
+                const data = await res.json();
+                allPokemon = data.results.map(p => {
+                    const id = parseInt(p.url.split('/').slice(-2, -1)[0]);
+                    return {
+                        name: p.name,
+                        id: id,
+                        img: `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${id}.png`
+                    };
+                }).filter(p => p.id <= 721 || p.name.includes('-mega'));
+                renderPokeList(allPokemon.slice(0, 60));
+            } catch (e) {}
+        }
+
+        function renderPokeList(list) {
+            const container = document.getElementById('pokeList');
+            container.innerHTML = "";
+            list.forEach(p => {
+                const div = document.createElement('div');
+                div.className = 'poke-item';
+                div.innerHTML = `<img src="${p.img}" width="70"><div style="font-size:0.8rem;text-transform:capitalize">${p.name.replace(/-/g,' ')}</div>`;
+                div.onclick = () => selectPokemon(p);
+                container.appendChild(div);
+            });
+        }
+        function filterPoke() {
+            const q = document.getElementById('searchPoke').value.toLowerCase();
+            renderPokeList(q.length < 2 ? allPokemon.slice(0, 60) : allPokemon.filter(p => p.name.includes(q)).slice(0, 60));
+        }
+
+        function openModal(idx) { currentSlot = idx; document.getElementById('pokeModal').style.display = 'flex'; }
+        function closeModal() { document.getElementById('pokeModal').style.display = 'none'; }
+
+        async function selectPokemon(poke) {
+            const slot = document.getElementById(`slot-${currentSlot}`);
+            slot.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            closeModal();
+            try {
+                const res = await fetch(poke.img);
+                const blob = await res.blob();
+                const reader = new FileReader();
+                reader.onloadend = () => {
+                    slot.innerHTML = `<img src="${reader.result}" alt="${poke.name}"><div class="remove-poke" onclick="event.stopPropagation();clearSlot(${currentSlot})">x</div>`;
+                }
+                reader.readAsDataURL(blob);
+            } catch (e) {
+                slot.innerHTML = `<img src="${poke.img}" crossorigin="anonymous"><div class="remove-poke" onclick="event.stopPropagation();clearSlot(${currentSlot})">x</div>`;
+            }
+        }
+        function clearSlot(idx) { document.getElementById(`slot-${idx}`).innerHTML = '<i class="fas fa-plus" style="opacity:0.5;color:#fff"></i>'; }
+
+        // --- DOWNLOAD LOGIC (SMART SCALE FIX) ---
+        function downloadCard() {
+            const btn = document.querySelector('.btn-save');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Xử lý...';
+            
+            const card = document.getElementById('trainer-card');
+            const scaler = document.querySelector('.card-scaler');
+            const originalTransform = scaler.style.transform;
+            
+            // 1. Reset scale về 1 để chụp ảnh kích thước thật (HD)
+            scaler.style.transform = 'scale(1)';
+            
+            // 2. Chụp
+            // Bỏ hiệu ứng để tránh lỗi render
+            card.style.boxShadow = "none";
+            card.style.borderRadius = "0";
+
+            html2canvas(card, {
+                scale: 2, // 2x resolution
+                useCORS: true,
+                allowTaint: true,
+                backgroundColor: null,
+                scrollY: 0
+            }).then(canvas => {
+                // 3. Khôi phục lại giao diện ban đầu
+                scaler.style.transform = originalTransform;
+                card.style.boxShadow = "";
+                card.style.borderRadius = "20px";
+                btn.innerHTML = originalText;
+
+                // 4. Tải xuống
+                const link = document.createElement('a');
+                link.download = `TrainerCard-${document.getElementById('valId').innerText}.png`;
+                link.href = canvas.toDataURL("image/png");
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            }).catch(err => {
+                scaler.style.transform = originalTransform;
+                card.style.boxShadow = "";
+                card.style.borderRadius = "20px";
+                btn.innerHTML = originalText;
+                alert("Lỗi tải ảnh! Hãy chắc chắn bạn đang chạy trên Server.");
+            });
+        }
+        
+        window.onclick = (e) => { if(e.target == document.getElementById('pokeModal')) closeModal(); }
     </script>
 </body>
 </html>
